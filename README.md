@@ -53,6 +53,11 @@ Abre **ZapZap P5R** desde el menú de aplicaciones y escanea el QR.
   cuenta regresiva; se borra sola pasada la fecha.
 - **Si algo se ve raro:** `Ctrl+Shift+P` apaga la estética; menú **Persona 5 →
   Volver a ZapZap original** abre ZapZap sin el mod (misma sesión).
+- **GIF y videos:** el motor web que se instala no trae los códecs de los MP4
+  de WhatsApp, así que el mod los convierte al abrirlos (tardan uno o dos
+  segundos más en arrancar; los videos largos, algo más). La primera vez puede
+  descargar ffmpeg (~30 MB) en segundo plano. En «ZapZap original» no se
+  reproducen.
 
 ### Actualizaciones
 

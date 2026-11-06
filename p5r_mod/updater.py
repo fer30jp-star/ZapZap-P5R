@@ -73,6 +73,8 @@ NATIVE_CONFIG = os.path.join(CONFIG_HOME, "ZapZap", "ZapZap.conf")
 CHECK_INTERVAL_S = 12 * 3600
 KEEP_RELEASES = 3
 BASE_DEPENDENCIES = ["PyQt6", "PyQt6-WebEngine"]
+# Del mod, además de las de ZapZap: ffmpeg para convertir GIF y videos (ver media.py).
+MOD_DEPENDENCIES = ["imageio-ffmpeg"]
 TAG_RE = re.compile(r"^v?(\d+)\.(\d+)(?:\.(\d+))?$")
 
 QUIET = False
@@ -213,7 +215,7 @@ def release_dependencies(release_dir):
             deps = re.findall(r"[\"']([^\"']+)[\"']", block.group(1)) or deps
     except OSError:
         pass
-    return deps
+    return deps + [d for d in MOD_DEPENDENCIES if d not in deps]
 
 
 def ensure_venv(dependencies, upgrade=False):

@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import QFrame, QMenu, QMenuBar, QMessageBox, QPushButton
 
 from p5r_mod import __mod_name__, __version__
 from p5r_mod.bootstrap import original_command_args
+from p5r_mod.media import MediaTranscoder
 from p5r_mod.state import P5RState
 
 logger = logging.getLogger("zapzap-p5r")
@@ -118,12 +119,16 @@ class P5RController(QObject):
         self._sync_timer.setInterval(SYNC_INTERVAL_MS)
         self._sync_timer.timeout.connect(self._sync_pages)
 
+        # GIF y videos: independiente del tema, siempre activo.
+        self._media = MediaTranscoder(self, self._whatsapp_pages)
+
     # ------------------------------------------------------------------ ciclo
     def start(self):
         logger.info("%s %s activo (estado: %s)", __mod_name__, __version__, self.state.path)
         self._scan()
         self._scan_timer.start()
         self._sync_timer.start()
+        self._media.start()
 
     @safe_slot
     def _scan(self):
@@ -146,6 +151,10 @@ class P5RController(QObject):
         self._pages[key] = (page, account_id)
         page.destroyed.connect(lambda *_args, k=key: self._pages.pop(k, None))
         self._install_script(page, account_id)
+        try:
+            self._media.attach(page, already_loaded=page.url().host() == WHATSAPP_HOST)
+        except Exception:
+            logger.exception("No se pudo preparar la reproducción de GIF y videos")
         if page.url().host() == WHATSAPP_HOST:
             # La página ya estaba cargada: aplica el mod sin recargar WhatsApp.
             page.runJavaScript(self._build_source(account_id), 0)
@@ -157,6 +166,9 @@ class P5RController(QObject):
                 self._pages.pop(key, None)
                 continue
             yield page, account_id
+
+    def _whatsapp_pages(self):
+        return [page for page, _account in self._live_pages() if page.url().host() == WHATSAPP_HOST]
 
     def _build_source(self, account_id):
         cards = self.state.cards_for(account_id)
